@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="A transparent football match analysis and prediction dashboard.">
+  <title>MatchLens — Football Predictor</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#top" aria-label="MatchLens home"><span class="brand-mark">M</span><span>match<span class="brand-light">lens</span></span></a>
+      <div class="side-label">WORKSPACE</div>
+      <a class="nav-link active" href="#matches"><span class="nav-icon">▦</span> Match centre</a>
+      <a class="nav-link" href="#analysis"><span class="nav-icon">◒</span> AI insights</a>
+      <a class="nav-link" href="#sources"><span class="nav-icon">⌘</span> Data sources</a>
+      <div class="sidebar-bottom"><span class="status-dot"></span><span>Prediction engine ready</span><small>Model v0.1 · Elo baseline</small></div>
+    </aside>
+
+    <main id="top" class="main-content">
+      <header class="topbar"><div class="breadcrumb">FOOTBALL <span>/</span> MATCH CENTRE</div><div class="top-actions"><span class="today-label" id="today-label"></span><button class="avatar" aria-label="Profile">A</button></div></header>
+
+      <section class="welcome-row">
+        <div><p class="eyebrow">MATCH INTELLIGENCE</p><h1>See the match <span>before it happens.</span></h1><p class="subhead">Compare the data. Understand the probabilities. Make your own call.</p></div>
+        <div class="hero-actions"><button id="refresh-btn" class="button secondary">↻ Refresh data</button><button id="demo-btn" class="button primary">Load demo</button></div>
+      </section>
+
+      <div id="notice" class="notice" role="status" aria-live="polite">Connect the secure backend to load provider data, or load clearly labelled demo matches.</div>
+
+      <section class="stat-grid" aria-label="System overview">
+        <article class="stat-card"><div class="stat-top"><span>UPCOMING MATCHES</span><span class="stat-icon green">▦</span></div><strong id="stat-matches">—</strong><small>in the selected feed</small></article>
+        <article class="stat-card"><div class="stat-top"><span>CONNECTED SOURCES</span><span class="stat-icon blue">⌘</span></div><strong id="stat-sources">0 <em>/ 4</em></strong><small>provider status from backend</small></article>
+        <article class="stat-card"><div class="stat-top"><span>MODEL</span><span class="stat-icon purple">◒</span></div><strong class="model-stat">Elo</strong><small>explainable baseline · not certainty</small></article>
+        <article class="stat-card"><div class="stat-top"><span>LAST UPDATED</span><span class="stat-icon orange">◷</span></div><strong id="stat-updated">—</strong><small>local time</small></article>
+      </section>
+
+      <section id="matches" class="content-grid">
+        <div class="panel match-panel">
+          <div class="panel-heading"><div><p class="eyebrow">FIXTURES & FORECASTS</p><h2>Upcoming matches</h2></div><label class="select-wrap"><span class="sr-only">Filter matches</span><select id="league-filter"><option value="all">All competitions</option></select></label></div>
+          <div id="match-list" class="match-list"><div class="empty-state"><div class="empty-ball">⚽</div><strong>No match data loaded yet</strong><p>Refresh to try your configured APIs, or use demo mode to explore the interface.</p></div></div>
+          <div class="panel-foot"><span>Probabilities are estimates, not guarantees.</span><span class="demo-tag" id="demo-tag" hidden>DEMO DATA</span></div>
+        </div>
+
+        <aside class="right-column">
+          <section class="panel chart-panel"><div class="panel-heading"><div><p class="eyebrow">MODEL SNAPSHOT</p><h2>Outcome mix</h2></div><span class="tiny-pill">1X2</span></div><div id="outcome-chart" class="outcome-chart"><div class="chart-empty">Load matches to see the forecast distribution.</div></div><div class="chart-legend"><span><i class="legend-home"></i>Home</span><span><i class="legend-draw"></i>Draw</span><span><i class="legend-away"></i>Away</span></div></section>
+          <section id="analysis" class="panel insight-panel"><div class="panel-heading"><div><p class="eyebrow">ASSISTANT</p><h2>Match insights</h2></div><span class="sparkle">✦</span></div><div id="insight-content" class="insight-content"><div class="insight-placeholder">Load match data and I’ll summarize the strongest probability signals and data gaps.</div></div><div class="ai-note">Explainable baseline insights. No generative AI model is connected yet.</div></section>
+        </aside>
+      </section>
+
+      <section id="sources" class="panel sources-panel"><div class="panel-heading"><div><p class="eyebrow">PROVIDER CONNECTIONS</p><h2>Your four APIs</h2></div><span class="source-note">Secrets belong on the backend—not in this page.</span></div><div id="provider-list" class="provider-grid"></div></section>
+      <footer class="footer"><span>MatchLens · early build</span><span>For analysis and learning only—not betting advice.</span></footer>
+    </main>
+  </div>
+  <script src="./src/config.js"></script>
+  <script src="./src/app.js" defer></script>
+</body>
+</html>
