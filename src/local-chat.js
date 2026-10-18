@@ -42,13 +42,8 @@ async function loadGenerator(statusMessage) {
       }
     }
   });
-  generatorPromise = (async () => {
-    if (navigator.gpu) {
-      try { return await load("webgpu"); }
-      catch (error) { console.warn("WebGPU unavailable; trying browser CPU/WASM", error); }
-    }
-    return await load("wasm");
-  })();
+  // Avoid WebGPU here: this browser logs invalid WebGPU compute pipelines for this model.
+  generatorPromise = load("wasm");
   try { return await generatorPromise; }
   catch (error) { generatorPromise = undefined; throw error; }
 }
