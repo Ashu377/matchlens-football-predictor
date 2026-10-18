@@ -118,6 +118,38 @@
   $('#refresh-btn').addEventListener('click', refresh);
   $('#demo-btn').addEventListener('click', loadDemo);
   $('#league-filter').addEventListener('change', renderMatches);
+
+  const chatPanel = $('#chat-panel');
+  const chatToggle = $('#chat-toggle');
+  const chatLog = $('#chat-log');
+  const chatInput = $('#chat-input');
+  const chatHistory = [];
+  function addChatMessage(role, text, extra='') {
+    const el=document.createElement('div'); el.className=`chat-message ${role} ${extra}`.trim(); el.textContent=text; chatLog.appendChild(el); chatLog.scrollTop=chatLog.scrollHeight; return el;
+  }
+  function toggleChat(show) {
+    chatPanel.hidden=!show; chatToggle.setAttribute('aria-expanded',String(show));
+    if (show) chatInput.focus(); else chatToggle.focus();
+  }
+  chatToggle.addEventListener('click',()=>toggleChat(chatPanel.hidden));
+  $('#chat-close').addEventListener('click',()=>toggleChat(false));
+  document.querySelectorAll('.chat-prompt').forEach(button=>button.addEventListener('click',()=>{chatInput.value=button.textContent;$('#chat-form').requestSubmit();}));
+  $('#chat-form').addEventListener('submit', async (event)=>{
+    event.preventDefault(); const message=chatInput.value.trim(); if(!message)return;
+    addChatMessage('user',message); chatInput.value=''; chatHistory.push({role:'user',content:message});
+    const waiting=addChatMessage('assistant','Thinking…','pending'); $('#chat-send').disabled=true;
+    const url=cfg.supabaseUrl?`${cfg.supabaseUrl.replace(/\/$/,'')}/functions/v1/${encodeURIComponent(cfg.chatFunctionName||'chat')}`:'';
+    if(!url){waiting.remove();addChatMessage('assistant','The secure chat backend is not configured yet.');$('#chat-send').disabled=false;return;}
+    try{
+      const headers={'Content-Type':'application/json'};
+      if(cfg.supabaseAnonKey){headers.apikey=cfg.supabaseAnonKey;headers.Authorization=`Bearer ${cfg.supabaseAnonKey}`;}
+      const response=await fetch(url,{method:'POST',headers,body:JSON.stringify({message,history:chatHistory.slice(0,-1).slice(-8),matches:currentMatches.slice(0,20).map(m=>({home:m.home,away:m.away,competition:m.competition,kickoff:m.kickoff,source:m.source,prediction:m.prediction})),demoMode})});
+      const payload=await response.json(); if(!response.ok)throw new Error(payload.error||`Chat service returned ${response.status}`);
+      waiting.remove(); const reply=String(payload.reply||'I could not form a reply just now.'); addChatMessage('assistant',reply); chatHistory.push({role:'assistant',content:reply}); if(chatHistory.length>16)chatHistory.splice(0,chatHistory.length-16);
+    }catch(err){waiting.remove();addChatMessage('assistant',`I couldn't reach the chat service: ${err.message}. Try again in a moment.`);}
+    finally{$('#chat-send').disabled=false;chatInput.focus();}
+  });
+
   updateProviders();
   if (cfg.supabaseUrl) refresh();
 })();
