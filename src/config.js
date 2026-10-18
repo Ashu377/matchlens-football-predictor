@@ -1,6 +1,7 @@
-/* Public browser settings only. Never put sports API keys in this file. */
+/* Supabase URL and publishable key are public browser config; no sports or AI secrets here. */
 window.MATCHLENS_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: "",
-  functionName: "matches"
+  supabaseUrl: "https://ctlsnsccjpftbxvffmdi.supabase.co",
+  supabaseAnonKey: "sb_publishable_DGbVFTeq3KSA0IaIy748pg_0tgbq_-a",
+  functionName: "",
+  chatFunctionName: "chat"
 };
