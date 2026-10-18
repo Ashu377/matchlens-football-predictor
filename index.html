@@ -53,7 +53,18 @@
       <footer class="footer"><span>MatchLens · early build</span><span>For analysis and learning only—not betting advice.</span></footer>
     </main>
   </div>
+  <div class="chat-widget">
+    <section id="chat-panel" class="chat-panel" role="dialog" aria-label="MatchLens AI chat" aria-modal="false" hidden>
+      <header class="chat-header"><div><strong>MatchLens AI</strong><small>Ask about your match data</small></div><button id="chat-close" class="chat-close" aria-label="Close chat">×</button></header>
+      <div id="chat-log" class="chat-log" role="log" aria-live="polite"><div class="chat-message assistant">Hey! I can explain the forecasts and compare matches currently loaded in MatchLens. External web search isn’t connected yet.</div></div>
+      <div class="chat-prompts"><button type="button" class="chat-prompt">Summarize the matches</button><button type="button" class="chat-prompt">What does 1X2 mean?</button></div>
+      <form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">Message MatchLens AI</label><textarea id="chat-input" maxlength="1200" rows="2" placeholder="Ask about a match…" required></textarea><button id="chat-send" class="button primary" type="submit" aria-label="Send message">Send</button></form>
+      <div class="chat-disclaimer">AI can be wrong. Forecasts aren’t guarantees or betting advice.</div>
+    </section>
+    <button id="chat-toggle" class="chat-toggle" aria-expanded="false" aria-controls="chat-panel"><span>✦</span> Ask MatchLens</button>
+  </div>
   <script src="./src/config.js"></script>
+ 
   <script src="./src/app.js" defer></script>
 </body>
 </html>
