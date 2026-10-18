@@ -1,5 +1,6 @@
 import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
 
+// Small public ONNX model; inference runs in the visitor's browser.
 const MODEL_ID = "onnx-community/SmolLM2-135M-Instruct-ONNX";
 const form = document.querySelector("#chat-form");
 const input = document.querySelector("#chat-input");
@@ -9,9 +10,9 @@ const history = [];
 let generatorPromise;
 
 const note = document.querySelector(".ai-note");
-if (note) note.textContent = "Runs on this device. First use downloads the model; replies may be slower on older phones.";
+if (note) note.textContent = "Runs on this device. First use downloads about 180 MB; replies may be slower on older phones.";
 const headerNote = document.querySelector(".chat-header small");
-if (headerNote) headerNote.textContent = "Private, on-device AI · first load downloads a small model";
+if (headerNote) headerNote.textContent = "Private, on-device AI · ~180 MB first download";
 
 function addMessage(role, text, extra = "") {
   const element = document.createElement("div");
@@ -32,6 +33,7 @@ async function loadGenerator(statusMessage) {
   if (generatorPromise) return generatorPromise;
   const load = async (device) => pipeline("text-generation", MODEL_ID, {
     device,
+    dtype: "q4",
     progress_callback: (progress) => {
       if (progress.status === "progress" && Number.isFinite(progress.progress)) {
         statusMessage.textContent = `Loading the on-device AI… ${Math.round(progress.progress)}%`;
@@ -67,10 +69,13 @@ async function answer(message, statusMessage) {
     repetition_penalty: 1.1
   });
   const generated = result?.[0]?.generated_text;
-  const reply = Array.isArray(generated) ? generated.at(-1)?.content : generated;
+  const reply = Array.isArray(generated)
+    ? generated.at(-1)?.content
+    : generated;
   return String(reply || "I couldn't form a reply. Try asking in a simpler way.").trim();
 }
 
+// Capture before app.js's old backend handler, so no Supabase/AI API request is sent.
 document.addEventListener("submit", async (event) => {
   if (event.target !== form) return;
   event.preventDefault();
