@@ -1,0 +1,5 @@
+[functions.matches]
+verify_jwt = true
+
+[functions.chat]
+verify_jwt = false
