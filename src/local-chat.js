@@ -1,7 +1,7 @@
 import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
 
-// Small public ONNX model; inference runs in the visitor's browser.
-const MODEL_ID = "onnx-community/SmolLM2-135M-Instruct-ONNX";
+// Smaller public ONNX model; inference runs in the visitor's browser.
+const MODEL_ID = "onnx-community/flan-t5-small-ONNX";
 const form = document.querySelector("#chat-form");
 const input = document.querySelector("#chat-input");
 const send = document.querySelector("#chat-send");
@@ -10,9 +10,9 @@ const history = [];
 let generatorPromise;
 
 const note = document.querySelector(".ai-note");
-if (note) note.textContent = "Runs on this device. First use downloads about 180 MB; replies may be slower on older phones.";
+if (note) note.textContent = "Runs on this device. The smaller model still needs a first download; replies may be slower on older phones.";
 const headerNote = document.querySelector(".chat-header small");
-if (headerNote) headerNote.textContent = "Private, on-device AI · ~180 MB first download";
+if (headerNote) headerNote.textContent = "Private, on-device AI · smaller first download";
 
 function addMessage(role, text, extra = "") {
   const element = document.createElement("div");
@@ -26,14 +26,14 @@ function addMessage(role, text, extra = "") {
 function matchContext() {
   const cards = document.querySelector("#match-list")?.innerText?.trim() || "No match cards are currently loaded.";
   const demo = !document.querySelector("#demo-tag")?.hidden;
-  return `${demo ? "DEMO MODE: the match examples are fictional. Do not describe them as real." : "Use only the match details shown below; they may be incomplete."}\n${cards.slice(0, 6000)}`;
+  return `${demo ? "DEMO MODE: the match examples are fictional. Do not describe them as real." : "Use only the match details shown below; they may be incomplete."}\n${cards.slice(0, 1600)}`;
 }
 
 async function loadGenerator(statusMessage) {
   if (generatorPromise) return generatorPromise;
-  const load = async (device) => pipeline("text-generation", MODEL_ID, {
+  const load = async (device) => pipeline("text2text-generation", MODEL_ID, {
     device,
-    dtype: "q4",
+    dtype: "q8",
     progress_callback: (progress) => {
       if (progress.status === "progress" && Number.isFinite(progress.progress)) {
         statusMessage.textContent = `Loading the on-device AI… ${Math.round(progress.progress)}%`;
@@ -56,26 +56,16 @@ async function loadGenerator(statusMessage) {
 async function answer(message, statusMessage) {
   const generator = await loadGenerator(statusMessage);
   const context = matchContext();
-  const messages = [
-    { role: "system", content: "You are MatchLens, a brief football explainer. Answer in plain language. Explain football terms and the 1X2 market accurately. For match questions, use only the supplied MatchLens context. Never invent live scores, fixtures, injuries, odds, or facts; say when information is unavailable. A probability is an estimate, not a guarantee or betting advice. If the context is demo data, clearly say it is fictional. Keep answers under 100 words." },
-    { role: "user", content: `Current MatchLens context:\n${context}` },
-    ...history.slice(-6),
-    { role: "user", content: message }
-  ];
-  const result = await generator(messages, {
-    max_new_tokens: 120,
-    temperature: 0.35,
-    do_sample: true,
-    repetition_penalty: 1.1
+  const transcript = history.slice(-4).map((turn) => `${turn.role === "user" ? "User" : "Assistant"}: ${turn.content}`).join("\n");
+  const prompt = `You are MatchLens, a brief football explainer. Explain football terms and 1X2 accurately, in plain language. For match questions, only use the context below. Never invent live scores, fixtures, injuries, or odds; say when information is unavailable. Probabilities are estimates, not betting advice. Clearly identify demo data as fictional. Keep the reply under 70 words.\n\nMatchLens context:\n${context}\n\n${transcript ? `Recent conversation:\n${transcript}\n\n` : ""}User: ${message}\nAssistant:`;
+  const result = await generator(prompt, {
+    max_new_tokens: 88,
+    do_sample: false
   });
-  const generated = result?.[0]?.generated_text;
-  const reply = Array.isArray(generated)
-    ? generated.at(-1)?.content
-    : generated;
+  const reply = result?.[0]?.generated_text;
   return String(reply || "I couldn't form a reply. Try asking in a simpler way.").trim();
 }
 
-// Capture before app.js's old backend handler, so no Supabase/AI API request is sent.
 document.addEventListener("submit", async (event) => {
   if (event.target !== form) return;
   event.preventDefault();
@@ -91,7 +81,7 @@ document.addEventListener("submit", async (event) => {
     status.remove();
     addMessage("assistant", reply);
     history.push({ role: "user", content: message }, { role: "assistant", content: reply });
-    if (history.length > 12) history.splice(0, history.length - 12);
+    if (history.length > 8) history.splice(0, history.length - 8);
   } catch (error) {
     console.error("Local MatchLens chat error", error);
     status.remove();
